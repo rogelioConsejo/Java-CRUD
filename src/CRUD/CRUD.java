@@ -42,7 +42,7 @@ public class CRUD {
     }
 
     /**
-     * Se puede inicializar con valores por defecto.
+     * Se puede inicializar con valores por defecto. Este desaparecerá en el futuro cercano.
      */
     @Contract(pure = true)
     public CRUD() {
@@ -60,8 +60,8 @@ public class CRUD {
             StringBuilder valores = new StringBuilder();
             StringBuilder columnas = new StringBuilder();
 
-            entrada2String(entrada, columnas);
-            valores2String(entrada, valores);
+            Herramientas.entrada2String(entrada, columnas);
+            Herramientas.valores2String(entrada, valores);
 
             String comando = "INSERT INTO " + table + " (" + columnas + ") VALUES (" + valores + ");";
             ejecutarInstruccion(comando);
@@ -93,22 +93,6 @@ public class CRUD {
 
 
     //MÉTODOS PRIVADOS
-    private void entrada2String(HashMap<String, String> entrada, StringBuilder columnas) {
-        for (String columna : entrada.keySet()) {
-            columnas.append(columna).append(", ");
-        }
-        //Borramos el espacio y la coma extra al final de "columnas"
-        columnas.setLength(columnas.length() - 2);
-    }
-
-    private void valores2String(HashMap<String, String> entrada, StringBuilder valores) {
-        for (Object valor : entrada.values()) {
-            valores.append('"').append(valor).append('"').append(", ");
-        }
-        //Borramos el espacio y la coma extra al final de "valores"
-        valores.setLength(valores.length() - 2);
-    }
-
     private ResultSet ejecutarInstruccion(String query, boolean retorna) {
         if (!retorna) {
             ejecutarInstruccion(query);
@@ -127,7 +111,7 @@ public class CRUD {
         }
     }
 
-    private boolean ejecutarInstruccion(String query) {
+    private void ejecutarInstruccion(String query) {
         try {
             conexion = conectar();
             assert conexion != null;
@@ -135,11 +119,9 @@ public class CRUD {
             instruccion.executeUpdate(query);
 
         } catch (Exception e) {
+            System.out.printf("No se pudo ejecutar el query: %s\n", query);
             e.printStackTrace();
-            return false;
         }
-
-        return true;
     }
 
     private synchronized Connection conectar() throws SQLException {
