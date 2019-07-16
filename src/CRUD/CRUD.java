@@ -1,10 +1,13 @@
 package CRUD;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class CRUD {
 
@@ -30,6 +33,7 @@ public class CRUD {
      * @param user                 usuario
      * @param pass                 contraseña
      */
+    @Contract(pure = true)
     public CRUD(String JDBC_driver, String ubicacionBaseDeDatos, String table, String user, String pass) {
         this.JDBC_driver = JDBC_driver;
         this.table = table;
@@ -41,6 +45,7 @@ public class CRUD {
     /**
      * Se puede inicializar con valores por defecto.
      */
+    @Contract(pure = true)
     public CRUD() {
 
     }
@@ -59,6 +64,7 @@ public class CRUD {
     public ArrayList<HashMap<String,String>> leerTodos() {
         String comando = "SELECT * FROM " + table + ";";
 
+        //Nos aseguramos de que devolvemos un resultado no-nulo
         return resultSet2ArrayDeHashMaps(ejecutarInstruccion(comando, true));
     }
 
@@ -70,7 +76,6 @@ public class CRUD {
     }
 
     //MÉTODOS PRIVADOS
-    @Nullable
     private ResultSet ejecutarInstruccion(String query, boolean retorna) {
         if (!retorna) {
             ejecutarInstruccion(query);
@@ -159,8 +164,7 @@ public class CRUD {
         }
     }
 
-
-    private ArrayList<HashMap<String,String>> resultSet2ArrayDeHashMaps(ResultSet resultSet) {
+    private ArrayList<HashMap<String,String>> resultSet2ArrayDeHashMaps(@NotNull ResultSet resultSet) {
         try {
             ArrayList<HashMap<String,String>> resultado = new ArrayList<>();
             int columnas = resultSet.getMetaData().getColumnCount();
