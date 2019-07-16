@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class CRUD {
 
@@ -20,8 +21,8 @@ public class CRUD {
     private String user = "CRUD";
     private String pass = "E_Vk75bk%%y62aHe";
 
-    //CONSTRUCTORES
 
+    //CONSTRUCTORES
     /**
      * Para definir los parámetros a usar para la conexión.
      *
@@ -49,11 +50,6 @@ public class CRUD {
     }
 
     //MÉTODOS PÚBLICOS
-    public boolean crearEntrada(String nombre, String apellido) {
-        String comando = "INSERT INTO " + table + " (nombre, apellido) VALUES (\"" + nombre + "\", \"" + apellido + "\");";
-        return ejecutarInstruccion(comando);
-    }
-
     /**
      * método genérico para insertar una entrada en la tabla
      *
@@ -61,20 +57,11 @@ public class CRUD {
      */
     public void crearEntrada(HashMap<String, String> entrada) {
         if (entrada.size() > 0) {
-            StringBuilder columnas = new StringBuilder();
             StringBuilder valores = new StringBuilder();
+            StringBuilder columnas = new StringBuilder();
 
-            for (String columna : entrada.keySet()) {
-                columnas.append(columna).append(", ");
-            }
-            //Borramos el espacio y la coma extra al final de "columnas"
-            columnas.setLength(columnas.length() - 2);
-
-            for (Object valor : entrada.values()) {
-                valores.append('"').append(valor).append('"').append(", ");
-            }
-            //Borramos el espacio y la coma extra al final de "valores"
-            valores.setLength(valores.length() - 2);
+            entrada2String(entrada, columnas);
+            valores2String(entrada, valores);
 
             String comando = "INSERT INTO " + table + " (" + columnas + ") VALUES (" + valores + ");";
             ejecutarInstruccion(comando);
@@ -84,7 +71,7 @@ public class CRUD {
     }
 
     /**
-     * Lee todos los elementos de la tabla.
+     * Lee todos los elementos de la tabla y los retorna como HashMap.
      *
      * @return "true" si se ejecutó sin errores, en caso contrario, "false"
      */
@@ -92,9 +79,8 @@ public class CRUD {
         String comando = "SELECT * FROM " + table + ";";
 
         //Nos aseguramos de que devolvemos un resultado no-nulo
-        return resultSet2ArrayDeHashMaps(ejecutarInstruccion(comando, true));
+        return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
     }
-
 
     /**
      * Cierra las conexiones, statements, y resultsets abiertos, si existen.
@@ -105,7 +91,24 @@ public class CRUD {
         cerrar(conexion);
     }
 
+
     //MÉTODOS PRIVADOS
+    private void entrada2String(HashMap<String, String> entrada, StringBuilder columnas) {
+        for (String columna : entrada.keySet()) {
+            columnas.append(columna).append(", ");
+        }
+        //Borramos el espacio y la coma extra al final de "columnas"
+        columnas.setLength(columnas.length() - 2);
+    }
+
+    private void valores2String(HashMap<String, String> entrada, StringBuilder valores) {
+        for (Object valor : entrada.values()) {
+            valores.append('"').append(valor).append('"').append(", ");
+        }
+        //Borramos el espacio y la coma extra al final de "valores"
+        valores.setLength(valores.length() - 2);
+    }
+
     private ResultSet ejecutarInstruccion(String query, boolean retorna) {
         if (!retorna) {
             ejecutarInstruccion(query);
@@ -194,25 +197,4 @@ public class CRUD {
         }
     }
 
-    private ArrayList<HashMap<String, String>> resultSet2ArrayDeHashMaps(@NotNull ResultSet resultSet) {
-        try {
-            ArrayList<HashMap<String, String>> resultado = new ArrayList<>();
-            int columnas = resultSet.getMetaData().getColumnCount();
-
-            while (resultSet.next()) {
-                HashMap<String, String> entrada = new HashMap<>();
-                for (int i = 1; i <= columnas; i++) {
-                    entrada.put(resultSet.getMetaData().getColumnName(i), resultSet.getString(i));
-                }
-                resultado.add(entrada);
-            }
-
-            return resultado;
-
-        } catch (SQLException e) {
-            System.out.println("No se pudo convertir el ResultSet a Array de HashMaps");
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

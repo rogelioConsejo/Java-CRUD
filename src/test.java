@@ -8,8 +8,8 @@ public class test {
 
     public static void main(String[] args) {
         HashMap<String, String> nuevaEntrada = new HashMap<>();
-        nuevaEntrada.put("nombre", "Emoji");
-        nuevaEntrada.put("apellido", "De Popó");
+        nuevaEntrada.put("nombre", "Elmeper");
+        nuevaEntrada.put("apellido", "Donas");
 
         CRUD crud = new CRUD("com.mysql.jdbc.Driver",
                 "localhost:3306", "CRUD",
