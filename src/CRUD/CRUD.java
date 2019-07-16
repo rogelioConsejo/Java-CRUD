@@ -3,6 +3,8 @@ package CRUD;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CRUD {
 
@@ -54,11 +56,12 @@ public class CRUD {
      *
      * @return "true" si se ejecutó sin errores, en caso contrario, "false"
      */
-    public ResultSet leerTodos() {
+    public ArrayList<HashMap<String,String>> leerTodos() {
         String comando = "SELECT * FROM " + table + ";";
 
-        return ejecutarInstruccion(comando, true);
+        return resultSet2ArrayDeHashMaps(ejecutarInstruccion(comando, true));
     }
+
 
     public void cerrar() {
         cerrar(resultado);
@@ -153,6 +156,29 @@ public class CRUD {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private ArrayList<HashMap<String,String>> resultSet2ArrayDeHashMaps(ResultSet resultSet) {
+        try {
+            ArrayList<HashMap<String,String>> resultado = new ArrayList<>();
+            int columnas = resultSet.getMetaData().getColumnCount();
+
+            while (resultSet.next()) {
+                HashMap<String, String> entrada = new HashMap<>();
+                for (int i = 1; i <= columnas; i++) {
+                    entrada.put(resultSet.getMetaData().getColumnName(i), resultSet.getString(i));
+                }
+                resultado.add(entrada);
+            }
+
+            return resultado;
+
+        } catch (SQLException e) {
+            System.out.println("No se pudo convertir el ResultSet a Array de HashMaps");
+            e.printStackTrace();
+            return null;
         }
     }
 }
