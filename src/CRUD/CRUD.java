@@ -2,12 +2,10 @@ package CRUD;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class CRUD {
 
@@ -57,11 +55,40 @@ public class CRUD {
     }
 
     /**
+     * método genérico para insertar una entrada en la tabla
+     *
+     * @param entrada Hashmap que representa la entrada. Las llaves son los nombres de las columnas y los valores son valores.
+     */
+    public void crearEntrada(HashMap<String, String> entrada) {
+        if (entrada.size() > 0) {
+            StringBuilder columnas = new StringBuilder();
+            StringBuilder valores = new StringBuilder();
+
+            for (String columna : entrada.keySet()) {
+                columnas.append(columna).append(", ");
+            }
+            //Borramos el espacio y la coma extra al final de "columnas"
+            columnas.setLength(columnas.length() - 2);
+
+            for (Object valor : entrada.values()) {
+                valores.append('"').append(valor).append('"').append(", ");
+            }
+            //Borramos el espacio y la coma extra al final de "valores"
+            valores.setLength(valores.length() - 2);
+
+            String comando = "INSERT INTO " + table + " (" + columnas + ") VALUES (" + valores + ");";
+            ejecutarInstruccion(comando);
+        } else {
+            System.out.println("No se puede crear una entrada sin valores.");
+        }
+    }
+
+    /**
      * Lee todos los elementos de la tabla.
      *
      * @return "true" si se ejecutó sin errores, en caso contrario, "false"
      */
-    public ArrayList<HashMap<String,String>> leerTodos() {
+    public ArrayList<HashMap<String, String>> leerTodos() {
         String comando = "SELECT * FROM " + table + ";";
 
         //Nos aseguramos de que devolvemos un resultado no-nulo
@@ -69,6 +96,9 @@ public class CRUD {
     }
 
 
+    /**
+     * Cierra las conexiones, statements, y resultsets abiertos, si existen.
+     */
     public void cerrar() {
         cerrar(resultado);
         cerrar(instruccion);
@@ -164,9 +194,9 @@ public class CRUD {
         }
     }
 
-    private ArrayList<HashMap<String,String>> resultSet2ArrayDeHashMaps(@NotNull ResultSet resultSet) {
+    private ArrayList<HashMap<String, String>> resultSet2ArrayDeHashMaps(@NotNull ResultSet resultSet) {
         try {
-            ArrayList<HashMap<String,String>> resultado = new ArrayList<>();
+            ArrayList<HashMap<String, String>> resultado = new ArrayList<>();
             int columnas = resultSet.getMetaData().getColumnCount();
 
             while (resultSet.next()) {
