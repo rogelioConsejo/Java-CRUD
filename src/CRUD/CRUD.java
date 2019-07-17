@@ -6,10 +6,10 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class CRUD {
-
     private Driver driver = null;
     private Connection conexion;
     private Statement instruccion;
@@ -67,6 +67,61 @@ public class CRUD {
             ejecutarInstruccion(comando);
         } else {
             System.out.println("No se puede crear una entrada sin valores.");
+        }
+    }
+
+    /**
+     * Busca las entradas que cumplan con las condiciones establecidas.
+     * @param condiciones       Columnas y sus valores correspondientes a usar como condiciones. Cada entrada representa una condición, unidas por AND.S
+     * @return                  entradas encontradas
+     */
+    public ArrayList<HashMap<String, String>> buscarEntradas(@NotNull HashMap<String, String> condiciones) {
+        if (condiciones.size() > 0) {
+            ArrayList<HashMap<String, String>> entradasEncontradas = new ArrayList<>();
+            StringBuilder strCondiciones = new StringBuilder();
+
+            for (Map.Entry<String, String> condicion: condiciones.entrySet()) {
+                strCondiciones.append(condicion.getKey()).append(" = \"").append(condicion.getValue()).append("\"").append(" AND ");
+            }
+
+            strCondiciones.setLength(strCondiciones.length() - 5);
+
+            System.out.println(condiciones);
+            String comando = "SELECT * FROM " + table + " WHERE " + strCondiciones + ";";
+            return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
+        } else {
+            System.out.println("No se puede buscar una entrada sin valores de referencia");
+            return null;
+        }
+    }
+
+    /**
+     * Busca las entradas que cumplan con las condiciones establecidas.
+     * @param condiciones   {{{condicion} AND {condicion}} OR {{condicion}}}
+     * @return  entradas encontradas
+     */
+    public ArrayList<HashMap<String, String>> buscarEntradas(@NotNull String[][][] condiciones) {
+        if (condiciones.length > 0 && condiciones[0].length >0) {
+            ArrayList<HashMap<String, String>> entradasEncontradas = new ArrayList<>();
+            StringBuilder strCondiciones = new StringBuilder();
+
+            for (String[][] condicion: condiciones) {
+                for (String[] termino : condicion) {
+                    strCondiciones.append(termino[0]).append(" = \"").append(termino[1]).append("\"").append(" AND ");
+                }
+                strCondiciones.setLength(strCondiciones.length() - 5);
+
+                strCondiciones.append(" OR ");
+            }
+
+            strCondiciones.setLength(strCondiciones.length() - 4);
+
+            System.out.println(strCondiciones);
+            String comando = "SELECT * FROM " + table + " WHERE " + strCondiciones + ";";
+            return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
+        } else {
+            System.out.println("No se puede buscar una entrada sin valores de referencia");
+            return null;
         }
     }
 

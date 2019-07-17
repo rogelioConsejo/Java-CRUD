@@ -8,8 +8,20 @@ public class test {
 
     public static void main(String[] args) {
         HashMap<String, String> nuevaEntrada = new HashMap<>();
-        nuevaEntrada.put("nombre", "Ando");
-        nuevaEntrada.put("apellido", "Chambeando");
+        nuevaEntrada.put("nombre", "Conejo");
+        nuevaEntrada.put("apellido", "Perez");
+        String nombreABuscar = "Consejo";
+        HashMap<String, String> parametrosDeBusqueda = new HashMap<>();
+        parametrosDeBusqueda.put("apellido", nombreABuscar);
+
+        String[][][] busqueda = {
+                {
+                        {"nombre", "Conejo"}, {"apellido", "Perez"}
+                },
+                {
+                        {"apellido", "Conejo"}
+                }
+        };
 
         //Crea una conexión
         CRUD crud = new CRUD("com.mysql.jdbc.Driver",
@@ -22,6 +34,15 @@ public class test {
         ArrayList<HashMap<String,String>> resultado = crud.leerTodos();
 
         imprimirEnPantalla(resultado);
+
+        resultado = crud.buscarEntradas(parametrosDeBusqueda);
+        System.out.printf("Resultado de la búsqueda por nombre %s:\n", nombreABuscar);
+
+        imprimirEnPantalla(resultado);
+
+        resultado = crud.buscarEntradas(busqueda);
+        imprimirEnPantalla(resultado);
+
         crud.cerrar();
     }
 
