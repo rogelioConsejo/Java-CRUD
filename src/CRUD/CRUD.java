@@ -143,17 +143,32 @@ public class CRUD {
      * @param cambios       los cambios a realizar {{"columna1"=>"valor1"},{"columna2"=>"valor2"}}
      */
     public void actualizarEntrada(String[] llavePrimaria, HashMap<String, String> cambios) {
-        StringBuilder strCambios = new StringBuilder();
+        if (llavePrimaria.length == 2) {
+            StringBuilder strCambios = new StringBuilder();
 
-        for (Map.Entry<String,String> cambio: cambios.entrySet()) {
-            strCambios.append(cambio.getKey()).append("=\"").append(cambio.getValue()).append("\", ");
+            for (Map.Entry<String, String> cambio : cambios.entrySet()) {
+                strCambios.append(cambio.getKey()).append("=\"").append(cambio.getValue()).append("\", ");
+            }
+
+            strCambios.setLength(strCambios.length() - 2);
+
+            String comando = "UPDATE " + table + " SET " + strCambios + " WHERE " + llavePrimaria[0] + "=" + llavePrimaria[1];
+
+            ejecutarInstruccion(comando);
+        } else {
+            System.out.println("La llave primaria se debe especificar por medio de un array de dos elementos.");
         }
 
-        strCambios.setLength(strCambios.length()-2);
+    }
 
-        String comando = "UPDATE " + table + " SET " + strCambios + " WHERE " + llavePrimaria[0] + "=" + llavePrimaria[1];
+    public void borrarEntrada(String[] llavePrimaria) {
+        if (llavePrimaria.length == 2) {
+            String comando = "DELETE FROM " + table + " WHERE " + llavePrimaria[0] + "=" + llavePrimaria[1];
 
-        ejecutarInstruccion(comando);
+            ejecutarInstruccion(comando);
+        } else {
+            System.out.println("La llave primaria se debe especificar por medio de un array de dos elementos.");
+        }
     }
 
     /**
