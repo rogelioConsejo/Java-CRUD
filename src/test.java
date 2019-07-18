@@ -30,9 +30,18 @@ public class test {
                 "E_Vk75bk%%y62aHe");
 
         //Crear una entrada y lee todas las entradas.
-        crud.crearEntrada(nuevaEntrada);
+//        crud.crearEntrada(nuevaEntrada);
         ArrayList<HashMap<String,String>> resultado = crud.leerTodos();
+        imprimirEnPantalla(resultado);
 
+        System.out.println();
+
+        String[] primaryKey = {"id","11"};
+        HashMap<String, String> cambios = new HashMap<>();
+        cambios.put("apellido", "Guerra");
+        crud.actualizarEntrada(primaryKey,cambios);
+
+        resultado = crud.leerTodos();
         imprimirEnPantalla(resultado);
 
         resultado = crud.buscarEntradas(parametrosDeBusqueda);

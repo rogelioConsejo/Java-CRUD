@@ -97,7 +97,7 @@ public class CRUD {
 
     /**
      * Busca las entradas que cumplan con las condiciones establecidas.
-     * @param condiciones   {{{condicion} AND {condicion}} OR {{condicion}}}
+     * @param condiciones   {{{condicion} AND {condicion}} OR {{condicion}}}. AND tiene precedencia sobre OR.
      * @return  entradas encontradas
      */
     public ArrayList<HashMap<String, String>> buscarEntradas(@NotNull String[][][] condiciones) {
@@ -135,6 +135,25 @@ public class CRUD {
 
         //Nos aseguramos de que devolvemos un resultado no-nulo
         return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
+    }
+
+    /**
+     * Realiza un update a una entrada.
+     * @param llavePrimaria la llave primaria de la entrada a modificar [columna, valor]
+     * @param cambios       los cambios a realizar {{"columna1"=>"valor1"},{"columna2"=>"valor2"}}
+     */
+    public void actualizarEntrada(String[] llavePrimaria, HashMap<String, String> cambios) {
+        StringBuilder strCambios = new StringBuilder();
+
+        for (Map.Entry<String,String> cambio: cambios.entrySet()) {
+            strCambios.append(cambio.getKey()).append("=\"").append(cambio.getValue()).append("\", ");
+        }
+
+        strCambios.setLength(strCambios.length()-2);
+
+        String comando = "UPDATE " + table + " SET " + strCambios + " WHERE " + llavePrimaria[0] + "=" + llavePrimaria[1];
+
+        ejecutarInstruccion(comando);
     }
 
     /**
