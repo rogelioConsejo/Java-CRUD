@@ -9,20 +9,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Permite generar acciones CRUD para una base de datos.
+ */
 public class CRUD {
-    private Driver driver = null;
-    private Connection conexion;
-    private Statement instruccion;
-    private ResultSet resultado;
-
-    private String JDBC_driver = "com.mysql.jdbc.Driver";
     private String table = "CRUD";
-    private String url = "jdbc:mysql://localhost:3306/" + table + "?useSSL=false";
-    private String user = "CRUD";
-    private String pass = "E_Vk75bk%%y62aHe";
-
+    private Conexion conexion;
 
     //CONSTRUCTORES
+    //No se puede inicializar sin definir los valores para la conexión.
+    private CRUD() {
+
+    }
+
     /**
      * Para definir los parámetros a usar para la conexión.
      *
@@ -34,19 +33,8 @@ public class CRUD {
      */
     @Contract(pure = true)
     public CRUD(String JDBC_driver, String ubicacionBaseDeDatos, String table, String user, String pass) {
-        this.JDBC_driver = JDBC_driver;
+        conexion = new Conexion(JDBC_driver, ubicacionBaseDeDatos, table, user, pass);
         this.table = table;
-        this.url = "jdbc:mysql://" + ubicacionBaseDeDatos + "/" + table + "?useSSL=false";
-        this.user = user;
-        this.pass = pass;
-    }
-
-    /**
-     * Se puede inicializar con valores por defecto. Este desaparecerá en el futuro cercano.
-     */
-    @Contract(pure = true)
-    public CRUD() {
-
     }
 
     //MÉTODOS PÚBLICOS
@@ -57,14 +45,11 @@ public class CRUD {
      */
     public void crearEntrada(HashMap<String, String> entrada) {
         if (entrada.size() > 0) {
-            StringBuilder valores = new StringBuilder();
-            StringBuilder columnas = new StringBuilder();
-
-            Herramientas.entrada2String(entrada, columnas);
-            Herramientas.valores2String(entrada, valores);
+            String columnas = Herramientas.columnas2String(entrada);
+            String valores = Herramientas.valores2String(entrada);
 
             String comando = "INSERT INTO " + table + " (" + columnas + ") VALUES (" + valores + ");";
-            ejecutarInstruccion(comando);
+            conexion.ejecutarInstruccion(comando);
         } else {
             System.out.println("No se puede crear una entrada sin valores.");
         }
@@ -88,7 +73,7 @@ public class CRUD {
 
             System.out.println(condiciones);
             String comando = "SELECT * FROM " + table + " WHERE " + strCondiciones + ";";
-            return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
+            return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(conexion.ejecutarInstruccion(comando, true)));
         } else {
             System.out.println("No se puede buscar una entrada sin valores de referencia");
             return null;
@@ -118,7 +103,7 @@ public class CRUD {
 
             System.out.println(strCondiciones);
             String comando = "SELECT * FROM " + table + " WHERE " + strCondiciones + ";";
-            return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
+            return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(conexion.ejecutarInstruccion(comando, true)));
         } else {
             System.out.println("No se puede buscar una entrada sin valores de referencia");
             return null;
@@ -134,7 +119,7 @@ public class CRUD {
         String comando = "SELECT * FROM " + table + ";";
 
         //Nos aseguramos de que devolvemos un resultado no-nulo
-        return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(ejecutarInstruccion(comando, true)));
+        return Herramientas.resultSet2ArrayDeHashMaps(Objects.requireNonNull(conexion.ejecutarInstruccion(comando, true)));
     }
 
     /**
@@ -144,28 +129,32 @@ public class CRUD {
      */
     public void actualizarEntrada(String[] llavePrimaria, HashMap<String, String> cambios) {
         if (llavePrimaria.length == 2) {
-            StringBuilder strCambios = new StringBuilder();
+            String strCambios = Herramientas.entradas2String(cambios);
+            String columnaLlavePrimaria = llavePrimaria[0];
+            String valorLlavePrimaria = llavePrimaria[1];
 
-            for (Map.Entry<String, String> cambio : cambios.entrySet()) {
-                strCambios.append(cambio.getKey()).append("=\"").append(cambio.getValue()).append("\", ");
-            }
+            String comando = "UPDATE " + table + " SET " + strCambios +
+                    " WHERE " + columnaLlavePrimaria + "=" + valorLlavePrimaria;
 
-            strCambios.setLength(strCambios.length() - 2);
-
-            String comando = "UPDATE " + table + " SET " + strCambios + " WHERE " + llavePrimaria[0] + "=" + llavePrimaria[1];
-
-            ejecutarInstruccion(comando);
+            conexion.ejecutarInstruccion(comando);
         } else {
             System.out.println("La llave primaria se debe especificar por medio de un array de dos elementos.");
         }
 
     }
 
+    /**
+     * Elimina una entrada.
+     * @param llavePrimaria llave primaria de la entrada a eliminar. [columna, valor]
+     */
     public void borrarEntrada(String[] llavePrimaria) {
         if (llavePrimaria.length == 2) {
-            String comando = "DELETE FROM " + table + " WHERE " + llavePrimaria[0] + "=" + llavePrimaria[1];
+            String columnaLlavePrimaria = llavePrimaria[0];
+            String valorLlavePrimaria = llavePrimaria[1];
 
-            ejecutarInstruccion(comando);
+            String comando = "DELETE FROM " + table + " WHERE " + columnaLlavePrimaria + "=" + valorLlavePrimaria;
+
+            conexion.ejecutarInstruccion(comando);
         } else {
             System.out.println("La llave primaria se debe especificar por medio de un array de dos elementos.");
         }
@@ -175,97 +164,6 @@ public class CRUD {
      * Cierra las conexiones, statements, y resultsets abiertos, si existen.
      */
     public void cerrar() {
-        cerrar(resultado);
-        cerrar(instruccion);
-        cerrar(conexion);
+        conexion.cerrar();
     }
-
-
-    //MÉTODOS PRIVADOS
-    private ResultSet ejecutarInstruccion(String query, boolean retorna) {
-        if (!retorna) {
-            ejecutarInstruccion(query);
-            return null;
-        }
-        try {
-            conexion = conectar();
-            assert conexion != null;
-            instruccion = conexion.createStatement();
-
-
-            return instruccion.executeQuery(query);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void ejecutarInstruccion(String query) {
-        try {
-            conexion = conectar();
-            assert conexion != null;
-            instruccion = conexion.createStatement();
-            instruccion.executeUpdate(query);
-
-        } catch (Exception e) {
-            System.out.printf("No se pudo ejecutar el query: %s\n", query);
-            e.printStackTrace();
-        }
-    }
-
-    private synchronized Connection conectar() throws SQLException {
-        try {
-            if (driver == null) {
-                Class jdbcDriver = Class.forName(JDBC_driver);
-                driver = (Driver) jdbcDriver.getDeclaredConstructor().newInstance();
-                DriverManager.registerDriver(driver);
-            }
-            return DriverManager.getConnection(url, user, pass);
-        } catch (Exception e) {
-            System.out.println("No se pudo registrar el Driver JDBC");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void cerrar(ResultSet resultSet) {
-        try {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void cerrar(PreparedStatement statement) {
-        try {
-            if (statement != null) {
-                statement.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void cerrar(Statement statement) {
-        try {
-            if (statement != null) {
-                statement.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void cerrar(Connection connection) {
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }

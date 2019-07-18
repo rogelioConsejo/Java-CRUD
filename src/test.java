@@ -15,9 +15,9 @@ public class test {
 
         //crea una nueva entrada
         HashMap<String, String> nuevaEntrada = new HashMap<>();
-        nuevaEntrada.put("nombre", "Pieuvre");
-        nuevaEntrada.put("apellido", "Thon");
-//        crud.crearEntrada(nuevaEntrada);
+        nuevaEntrada.put("nombre", "Yater");
+        nuevaEntrada.put("apellido", "Miné");
+        crud.crearEntrada(nuevaEntrada);
 
         //lee todas las entradas
         ArrayList<HashMap<String,String>> resultado = crud.leerTodos();

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 class Herramientas {
     static ArrayList<HashMap<String, String>> resultSet2ArrayDeHashMaps(@NotNull ResultSet resultSet) {
@@ -30,19 +31,39 @@ class Herramientas {
         }
     }
 
-    static void entrada2String(HashMap<String, String> entrada, StringBuilder columnas) {
+    static String columnas2String(HashMap<String, String> entrada) {
+        StringBuilder columnas = new StringBuilder();
+
         for (String columna : entrada.keySet()) {
             columnas.append(columna).append(", ");
         }
         //Borramos el espacio y la coma extra al final de "columnas"
         columnas.setLength(columnas.length() - 2);
+
+        return columnas.toString();
     }
 
-    static void valores2String(HashMap<String, String> entrada, StringBuilder valores) {
+    static String valores2String(HashMap<String, String> entrada) {
+        StringBuilder valores = new StringBuilder();
+
         for (Object valor : entrada.values()) {
             valores.append('"').append(valor).append('"').append(", ");
         }
         //Borramos el espacio y la coma extra al final de "valores"
         valores.setLength(valores.length() - 2);
+
+        return valores.toString();
+    }
+
+    static String entradas2String(HashMap<String, String> cambios) {
+        StringBuilder strCambios = new StringBuilder();
+
+        for (Map.Entry<String, String> cambio : cambios.entrySet()) {
+            strCambios.append(cambio.getKey()).append("=\"").append(cambio.getValue()).append("\", ");
+        }
+
+        strCambios.setLength(strCambios.length() - 2);
+
+        return strCambios.toString();
     }
 }
